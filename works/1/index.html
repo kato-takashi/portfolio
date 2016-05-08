@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<script src="js/jquery-2.1.3.min.js"></script>
+<link rel="stylesheet" href="css/reset.css">
+<link rel="stylesheet" href="css/sample.css">
+<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+<title>じゃんけん</title>
+<script>
+$(document).ready(function(){
+	// じゃんけんの手をnumberで管理
+	var player = 0;
+	var pc =  0;
+	// pc 0 グー
+	// pc 1 チョキ
+	// pc 2 パー
+	//
+	var pcArray = ["コンピュータの手：グー", "コンピュータの手：チョキ", "コンピュータの手：パー"];
+	var playerHand = "";
+	var pushPlayer = ["#gu_btn", "#cho_btn", "#par_btn"];
+	var result = "";
+
+	var resultWin = "あなたの勝ち";
+	var resultLose = "あなたの負け";
+	var resultAiko = "あいこ";
+
+	var randNum = [];
+	var timers = [];
+	var nums = [];
+	var slotNum = 0;
+	var stopFlag = false;
+
+	// 勝敗のフラグ
+	var winFlag = false;
+	var loseFlag = false;
+
+	// じゃんけんの手によるエフェクトを変えるためのフラグ
+	var guuWinFlag = false;
+	var chokiWinFlag = false;
+	var paaWinFlag = false;
+
+
+	// エフェクトを隠蔽
+	$("#eCut, #eFire, #eDageki").hide();
+
+	// スロット回転開始
+	runSlot(slotNum);
+
+	// じゃんけんの手ボタンを押したら
+	$(pushPlayer[0]).click(function(){
+		playerHand = "私の手：グー";
+		document.getElementById("playerHand").innerHTML = "<img src=\"img/pct0.png\">";
+		showResult(resultWin, resultLose, resultAiko);
+		stopSlot(slotNum);
+
+	});
+
+	$(pushPlayer[1]).click(function(){
+		playerHand = "私の手：チョキ";
+		document.getElementById("playerHand").innerHTML = "<img src=\"img/pct1.png\">";
+		showResult(resultAiko, resultWin, resultLose);
+		stopSlot(slotNum);
+
+	});
+
+	$(pushPlayer[2]).click(function(){
+		playerHand = "私の手：パー";
+		document.getElementById("playerHand").innerHTML = "<img src=\"img/pct2.png\">";
+		showResult(resultLose, resultAiko, resultWin);
+		stopSlot(slotNum);
+
+	});
+
+	// モーダルから復帰後リスタート
+	$("#reStart").click(function() {
+		reRunSlot(0);
+	});
+
+	// 結果を表示メソッド
+	function showResult(case0, case1, case2){
+		var _case0 = "", _case1 = "", _case2 = "";
+		 _case0 = case0;
+		 _case1 = case1;
+		 _case2 = case2;
+
+		pc =  Math.floor( Math.random() * 2.9 );
+		// pc =  1;  //チョキ
+		// pc =  2;　//パー
+		// pc =  0;　//グー
+		console.log("pc"+pc);
+
+		// playerの手の背景をランダムな色に
+		$("#playerHand img").css({'background-color': getRumRgba()});
+
+		// pcの手により条件分岐
+		if(pc == 1){
+			document.getElementById("pcHand").innerHTML = "<img src=\"img/pct1.png\">";
+			document.getElementById("vs").innerHTML = "<img src=\"img/vs.png\">";
+			result = _case0;
+
+			// 勝ったら
+			if(result == resultWin){
+					//パーで勝利
+					guuWinFlag = true;
+					winFlag = true;
+				}
+			// 負けたら
+			if(result == resultLose){
+					loseAction("#playerHand img");
+					loseFlag = true;
+				}
+		}else if(pc == 2){
+			document.getElementById("pcHand").innerHTML = "<img src=\"img/pct2.png\">";
+			document.getElementById("vs").innerHTML = "<img src=\"img/vs.png\">";
+
+			result = _case1;
+			if(result == resultWin){
+				   //グーで勝利
+					chokiWinFlag = true;
+					winFlag = true;
+				}
+			if(result == resultLose){
+					loseAction("#playerHand img");
+					loseFlag = true;
+			}
+		}else{
+			document.getElementById("pcHand").innerHTML = "<img src=\"img/pct0.png\">";
+			document.getElementById("vs").innerHTML = "<img src=\"img/vs.png\">";
+			result = _case2;
+			if(result == resultWin){
+				    //チョキで勝利
+					paaWinFlag = true;
+					winFlag = true;
+				}
+			if(result == resultLose){
+					loseAction("#playerHand img");
+					loseFlag = true;
+				}
+		}
+		// お互いの手が出た後のアニメーション処理
+		$("#pcHand, #playerHand, #pc").fadeOut("fast",function(){
+			$("#pcHand, #playerHand, #pc").fadeIn("fast", function(){
+				$("#pc").html(pcArray[pc]+"<br />"+playerHand);
+				// $("#num").text(result);
+				//もし勝っていたらエフェクト
+				if(guuWinFlag == true){
+					showEffect("#eDageki");
+				}else if(chokiWinFlag == true){
+					showEffect("#eCut");
+				}else if(paaWinFlag == true){
+					showEffect("#eFire");
+				}else{
+					// モーダル表示
+					showModal();
+				}
+			})
+		});
+	}
+
+	// 負けた時の関数
+	function loseAction(target){
+		var _target = target;
+		$(_target).fadeTo("4000",0.3).show().animate({
+		          top: 0,
+		          left: 0,
+		          width: '70px',
+		          height: '70px'
+		    }, 500);
+	}
+
+	// 勝った時の攻撃アニメーション関数
+	function showEffect(effectId){
+		var effectId = effectId;
+		var targetTop = $("#pcHand img").offset().top;
+		var targetLeft = $("#pcHand img").offset().left;
+		// var targetLeft = $("#pcHand img").width();
+		// console.log(targetTop, targetLeft);
+		$(effectId).css({"top" : targetTop, "left" : targetLeft});
+		$(effectId).fadeIn("slow", function(){
+				$(effectId).fadeOut(2000, function(){
+					// モーダル表示
+					showModal();
+					//フラグを初期化
+					guuWinFlag = false;
+					chokiWinFlag = false;
+					paaWinFlag = false;
+				});
+			loseAction("#pcHand img");
+		});
+	}
+
+	///////modal関係
+	/////モーダルウィンドウを出現させるクリックイベント
+	function showModal(){
+		//キーボード操作などにより、オーバーレイが多重起動するのを防止する
+		$( this ).blur() ;	//ボタンからフォーカスを外す
+		if( $( "#modal-overlay" )[0] ) return false ;		//新しくモーダルウィンドウを起動しない (防止策1)
+		//if($("#modal-overlay")[0]) $("#modal-overlay").remove() ;		//現在のモーダルウィンドウを削除して新しく起動する (防止策2)
+
+		//オーバーレイを出現させる
+		$( "body" ).append( '<div id="modal-overlay"></div>' ) ;
+		$( "#modal-overlay" ).fadeIn( "slow", function(){
+				if(winFlag == true){
+					// 勝った
+					console.log("modal win");
+					setModal("winLogo.png", "win01.png", "winBg.png");
+
+				}else if(loseFlag == true){
+					// 負けた
+					console.log("modal lose");
+					setModal("loseLogo.png", "lose01.png", "blood.png");
+				}else{
+					// あいこ
+					console.log("modal aiko");
+					setModal("aikoLogo.png", "aiko01.png", "aikoBg.png");
+				}
+		}) ;
+
+		//コンテンツをセンタリングする
+		centeringModalSyncer() ;
+
+		//コンテンツをフェードインする
+		$( "#modal-content" ).fadeIn( "slow" ) ;
+
+		//[#modal-overlay]、または[#modal-close]をクリックしたら…
+		$( "#modal-overlay,#modal-close" ).unbind().click( function(){
+			//[#modal-content]と[#modal-overlay]をフェードアウトした後に…
+			$( "#modal-content,#modal-overlay" ).fadeOut( "slow" , function(){
+				//スロット再開
+			reRunSlot(0);
+				//[#modal-overlay]を削除する
+				//初期化
+				$('#modal-overlay, #vs img, #playerHand img, #modalBg img, #modalLogo img, #modalPct img').remove() ;
+				winFlag = false;
+				loseFlag = false;
+			} ) ;
+		} ) ;
+	}
+
+	//リサイズされたら、センタリングをする関数[centeringModalSyncer()]を実行する
+	$( window ).resize( centeringModalSyncer ) ;
+		//センタリングを実行する関数
+		function centeringModalSyncer() {
+
+			//画面(ウィンドウ)の幅、高さを取得
+			var w = $( window ).width() ;
+			var h = $( window ).height() ;
+
+			//コンテンツ(#modal-content)の幅、高さを取得
+			var cw = $( "#modal-content" ).width();
+			var ch = $( "#modal-content" ).height();
+			console.log(cw);
+			//センタリングを実行する
+			$( "#modal-content" ).css( {"left": ((w - cw)/2) + "px","top": ((h - ch)/2) + "px"} ) ;
+		}
+	/////////
+	//モーダル内に写真をセット
+	function setModal(logo, pct, bg){
+		var logoUrl = "img/"+logo;
+		var pctUrl = "img/"+pct;
+		var bgUrl = "img/"+bg;
+
+	 //    $("#modalLogo").append($("<img>").attr("src", logoUrl).attr("width",160).attr("height",160));
+
+		// $("#modalPct").append($("<img>").attr("src", pctUrl).attr("width",160).attr("height",160));
+
+		// $("#modalBg").append($("<img>").attr("src", bgUrl).attr("width",160).attr("height",160));
+		//
+		//
+		// モーダル内のアニメーション
+		$("#modalLogo").append($("<img>").attr("src", logoUrl).fadeIn("fast", function(){
+				$("#modalBg").append($("<img>").attr("src", bgUrl).fadeIn("slow", function(){
+					$("#modalPct").append($("<img>").attr("src", pctUrl).fadeIn("slow"));
+				}));
+
+		}));
+	}
+
+	// スロット回転メソッド
+	function runSlot(n){
+		var pctNum = 3;
+		randNum[n] = Math.floor(Math.random()*pctNum);
+		document.getElementById("pcHand").innerHTML = "<img src=\"img/pct"+ randNum[n] +".png\">";
+		timers[n] = setTimeout(function(){
+			runSlot(n);
+		}, 50);
+	}
+
+	// スロット再回転メソッド
+	function reRunSlot(n){
+		if(stopFlag){
+			runSlot(n);
+			stopFlag = false;
+		}
+	}
+
+	// スロット停止メソッド
+	function stopSlot(n){
+		stopFlag = true;
+		clearTimeout(timers[n]);
+		console.log(randNum[n]);
+	}
+
+
+	/*rgba()形式でランダム色を返すプログラム
+	=======================================================================*/
+	function getRumRgba(){
+		var clr = 'rgba(';
+		for(i=0; i < 3; i++){
+			clr = clr + Math.floor( Math.random()*255) + ',';
+		}
+		clr = clr + Math.floor( Math.random()*10)/10 + ')';
+		return clr;
+	}
+});
+</script>
+</head>
+<body>
+<header>
+  <h1><img src="img/logo01.png" alt="じゃんけん"></h1>
+</header>
+
+
+<main>
+	<div class="col">
+		<div class="effect" id="eCut"></div>
+		<div class="effect" id="eFire"></div>
+		<div class="effect" id="eDageki"></div>
+		<span  class="slotBg" id="pcHand">?</span>
+		<span  class="slotBg" id="vs"></span>
+		<span  class="slotBg" id="playerHand"></span>
+	</div>
+	<!-- <a href="" id="reStart">もう一回</a> -->
+  <ul>
+    <li id="gu_btn" class="handsBtn"><img src="img/guu.png"  alt="グー"></li>
+    <li id="cho_btn" class="handsBtn"><img src="img/choki.png"  alt="チョキ"></li>
+    <li id="par_btn" class="handsBtn"><img src="img/paa.png"  alt="パー"></li>
+  </ul>
+
+  <!-- <canvas id="c1" width="140" height="140"></canvas>
+  <canvas id="stage" width="1000" height="1000"></canvas> -->
+</main>
+
+<div id="modal-content">
+	<!-- モーダルウィンドウのコンテンツ開始 -->
+	<div id="modalWrap">
+		<div id="modalLogo"></div>
+		<div id="modalPct"></div>
+		<div id="modalBg"></div>
+		<div id="pc" class="modalPcHand">コンピュータの出した手は？</div>
+		<div id="num"></div>
+	</div>
+	<a href="" id="reStart, modal-close" class="smallTxt">Try Again</a>
+	<!-- モーダルウィンドウのコンテンツ終了 -->
+</div>
+
+
+<footer>
+	<div id="line"><img src="img/line01.png"  alt=""></div>
+	<div id="name"><img src="img/name.png"   alt="かとうたかし"></div>
+</footer>
+
+</body>
+</html>

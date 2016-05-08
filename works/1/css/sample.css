@@ -1,0 +1,351 @@
+@charset "UTF-8";
+/*Scissors Paper Stone*/
+
+body{
+    font-family: 'Oswald', sans-serif;
+    margin:0;
+    padding:0;
+    text-align:left;
+    font-size: 1em;
+    width: 100%;
+    height:100%;
+    background-image: url("../img/bg01.jpg");
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center center;
+    background-size: cover;
+}
+
+header{
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+    margin:0 auto;
+    padding:10px 10px 10px 10px;
+    /*border: 1px #f00 solid;*/
+    -moz-box-shadow: 0 5px 5px #000;
+    -webkit-box-shadow: 0 5px 5px #000;
+}
+
+h1 img{
+    width:25%;
+    height:25%;
+}
+main{
+    text-align:center;
+    margin:20px auto;
+}
+footer{
+    /*background-color: #fff;*/
+    /*border-bottom:1px solid #ccc;*/
+    text-align: center;
+    margin:0 auto;
+    position:absolute;
+    bottom:0;
+}
+a:link {
+    text-decoration: none;
+}
+
+a:visited {
+    text-decoration: none;
+}
+p{
+    font-size:200%;
+    text-align: center;
+    /*border-bottom:1px solid #fff;*/
+    height:200px;
+}
+ul{
+    padding: 0;
+    /*border: 1px solid #000000;*/
+    width:600px;
+    text-align:center;
+    margin: 10px auto;
+}
+li{
+    float:left;
+    width:120px;
+    height:100px;
+    padding: 5px 5px 5px 5px;
+    margin: 0 0 0 8%;
+    list-style-type:none;
+    border: 1px solid #666;
+    background-color: #FFF;
+    cursor: pointer;
+    border-radius: 15px;        /* CSS3草案 */
+    -webkit-border-radius: 15px;    /* Safari,Google Chrome用 */
+    -moz-border-radius: 15px;   /* Firefox用 */
+    -webkit-box-shadow: 13px 20px 66px -1px rgba(0,0,0,0.75);
+    -moz-box-shadow: 13px 20px 66px -1px rgba(0,0,0,0.75);
+    box-shadow: 13px 20px 66px -1px rgba(0,0,0,0.75);
+}
+/*li:hover{
+    background: #333333;
+    color:#fff;
+}*/
+
+a, a img, li{
+    -webkit-transition: 0.3s ease-in-out;
+       -moz-transition: 0.3s ease-in-out;
+         -o-transition: 0.3s ease-in-out;
+            transition: 0.3s ease-in-out;
+}
+a:hover, a img:hover, li:hover {
+    opacity: 0.4;
+    filter: alpha(opacity=50);
+    background: #333333;
+}
+
+li img{
+    height:100%;
+}
+#line img{
+    width: 100%;
+    margin-top:4em;
+}
+
+#name img{
+    width:20%;
+    height:20%;
+}
+
+.col{
+    width:100%;
+    height: 100%;
+    /*border: 1px solid #FF0000;*/
+
+}
+
+.slotBg{
+    text-align:center;
+    margin:0 auto;
+    /*border: 1px solid #FF00FF;*/
+}
+
+#pcHand img, #playerHand img{
+    width: 200px;
+    height: 200px;
+    /*padding: 10px 10px 10px 10px;*/
+    margin: 0 auto;
+    border: 10px solid #000000;
+    padding: 20px 20px 20px 20px;
+    border-radius: 15px;        /* CSS3草案 */
+    -webkit-border-radius: 15px;    /* Safari,Google Chrome用 */
+    -moz-border-radius: 15px;   /* Firefox用 */
+    -webkit-box-shadow: 16px 34px 66px -1px rgba(0,0,0,0.75);
+    -moz-box-shadow: 16px 34px 66px -1px rgba(0,0,0,0.75);
+    box-shadow: 16px 34px 66px -1px rgba(0,0,0,0.75);
+
+}
+#pcHand img{
+        background:#bbbbbb;
+}
+
+#playerHand img{
+        background:#999900;
+}
+
+#vs img{
+    width: 200px;
+    height: 200px;
+    /*padding: 10px 10px 10px 10px;*/
+    margin: 0 auto;
+    padding: 20px 20px 20px 20px;
+}
+/*modal関係*/
+#modal-content {
+    width: 50% ;
+    margin: 0 ;
+    padding: 10px 20px ;
+    border: 2px solid #aaa ;
+    background: #fff ;
+    position: fixed ;
+    display: none ;
+    z-index: 2 ;
+    border-radius: 10px;        /* CSS3草案 */
+    -webkit-border-radius: 10px;    /* Safari,Google Chrome用 */
+    -moz-border-radius: 10px;   /* Firefox用 */
+    opacity:0.9;
+}
+#modalWrap{
+        /*border: 1px solid #ff00ff;*/
+        height:200px;
+}
+
+#modal-overlay {
+    z-index: 1 ;
+    display: none ;
+    position: fixed ;
+    top: 0 ;
+    left: 0 ;
+    width: 100% ;
+    height: 120% ;
+    background-color: rgba( 0,0,0, 0.75 ) ;
+
+}
+
+#modalLogo, #modalPct, #modalBg{
+    position:absolute;
+    text-align:center;
+    margin: 0 auto;
+    /*border: 1px solid #f00 ;*/
+}
+
+#modalLogo{
+    z-index: 5 ;
+    margin: 6em auto;
+}
+
+#modalPct{
+    z-index: 4 ;
+}
+
+#modalBg{
+    z-index: 3 ;
+}
+
+#modalLogo img{
+    width:50%;
+}
+
+#modalPct img{
+    width:30%;
+}
+
+#modalBg img{
+    width:20%;
+}
+.modalPcHand{
+    position: absolute;
+    top:1em;
+    left:2em;
+    font-size:0.1em;
+}
+
+.smallTxt{
+    position: absolute;
+    top:1em;
+    right:2em;
+    font-size:0.1em;
+    Z-index:20;
+}
+
+.button-link {
+    color: #00f ;
+    text-decoration: underline ;
+}
+
+.button-link:hover {
+    cursor: pointer ;
+    color: #f00 ;
+}
+
+/* /////// */
+/*エフェクトアニメーション*/
+#eCut {
+    /*border: 1px solid #ff00ff;*/
+    width: 320px;
+    height: 240px;
+    background: url(../img/eCut.png) no-repeat 0 0;
+    position:absolute;
+    /*一秒間に動くフレーム数*/
+    -webkit-animation: cutPlay 1s steps(10) infinite;
+    animation: cutPlay 1s steps(10) infinite;
+    /*display:none;*/
+    position:absolute;
+
+}
+@-webkit-keyframes cutPlay {
+    /*一秒間に動くスタイル*/
+    0% {
+        background-position: 0px 0;
+    }
+
+    100% {
+        background-position: 0px -2400px;
+    }
+}
+
+@keyframes cutPlay {
+    /*一秒間に動くスタイル*/
+    0% {
+        background-position: 0px 0;
+    }
+
+    100% {
+        background-position: 0px -2400px;
+    }
+}
+
+#eFire {
+    /*border: 1px solid #ff00ff;*/
+    width: 240px;
+    height: 240px;
+    background: url(../img/eFire.png) no-repeat 0 0;
+    position:absolute;
+    /*一秒間に動くフレーム数*/
+    -webkit-animation: firePlay 1s steps(10) infinite;
+    animation: firePlay 1s steps(10) infinite;
+    /*display:none;*/
+    position:absolute;
+    top:27px;
+    left:552.828125px;
+}
+@-webkit-keyframes firePlay {
+    /*一秒間に動くスタイル*/
+    0% {
+        background-position: 0px 0;
+    }
+
+    100% {
+        background-position: -2400px 0;
+    }
+}
+
+@keyframes firePlay {
+    /*一秒間に動くスタイル*/
+    0% {
+        background-position: 0px 0;
+    }
+
+    100% {
+        background-position: -2400px 0px;
+    }
+}
+
+#eDageki {
+    /*border: 1px solid #ff00ff;*/
+    width: 320px;
+    height: 240px;
+    background: url(../img/eDageki.png) no-repeat 0 0;
+    position:absolute;
+    /*一秒間に動くフレーム数*/
+    -webkit-animation: dagekiPlay 1s steps(10) infinite;
+    animation: dagekiPlay 1s steps(10) infinite;
+    /*display:none;*/
+    position:absolute;
+    top:27px;
+    left:552.828125px;
+}
+@-webkit-keyframes dagekiPlay {
+    /*一秒間に動くスタイル*/
+    0% {
+        background-position: 0px 0;
+    }
+
+    100% {
+        background-position: -3200px 0;
+    }
+}
+
+@keyframes dagekiPlay {
+    /*一秒間に動くスタイル*/
+    0% {
+        background-position: 0px 0;
+    }
+
+    100% {
+        background-position: -3200px 0px;
+    }
+}

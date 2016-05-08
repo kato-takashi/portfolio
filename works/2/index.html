@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>Reminder しゃべるので気をつけてね。web Speach Api</title>
+	<link rel="stylesheet" type="text/css" href="css/reset.css">
+	<link href='http://fonts.googleapis.com/css?family=Dosis:400,600' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="lib/clockpiker/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="lib/clockpiker/dist/bootstrap-clockpicker.min.css">
+	<link rel="stylesheet" type="text/css" href="lib/clockpiker/assets/css/clockpickerMain.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+
+	<script src="js/jquery-2.1.3.min.js"></script>
+
+	<script>
+	var beforeSayArray = ["おまえみたいなもんが、よくやったわ、そんなこんなで、できた？", "なんで俺の気持ちわかってくれへんの？ところで，例のやつできましたか?", "できてなかったら、あしたウンコ踏むかもしれないな。", "仕事できすぎて惚れてまうやろ、できたんでしょ?", "そろそで時間ですが、タスク終わりましたか?", "ひかりの速さで、仕事できたらいいのにな。ところで、お仕事できましたか?"];
+	var unitTxt = "";
+	var keys = [];
+	var timeFlag = false;
+	var onloadListArray = [];
+	var endlistArray = [];
+	var randCtlNum = beforeSayArray.length;
+
+	$(document).ready(function(){
+		//シークレット用
+		// showModal();
+
+		// 保存データが残っていたら
+		 for (var i = 0; i < localStorage.length; ++i) {
+	      // keys.push(localStorage.key(i));
+			console.log('window onload:', localStorage.key(i));
+			var get_key = localStorage.key(i);
+			var get_value = localStorage.getItem(get_key);
+            setHtml('#showTxt', get_key, get_value);
+	    }
+
+		//speak btn
+				
+				// $("#speakBtn").on("click",function(){
+				// var speakTxt = localStorage.getItem(keys[0]);
+				// // speakTxt = $("#text_area").val();
+				// var japanese = new SpeechSynthesisUtterance(speakTxt);
+				// japanese.volume = 4;
+				// japanese.pitch = 1;
+				// japanese.lang = 'ja-JP';
+				// speechSynthesis.speak(japanese);
+					
+////////////
+					//  unitTxt = beforeSayArray[0]+ localStorage.getItem(keys[0]); 
+					// $.when(
+					//   // しゃべる
+					// 	speak(unitTxt)
+					// ).done(function() {
+					//     // 喋ったあとdelete
+					//     localStorage.removeItem(keys[0]);
+					//     clearHTML();
+					// });
+				// 	alertSpeak();
+				// });
+
+
+		//savve btn
+		$("#saveBtn").on("click",function(){
+			var inputTxt = "";
+			var inputTime = "";
+		    console.log("saveしました");
+		    inputTxt = $("#text_area").val();
+
+
+			if(inputTxt==""){
+				alert("タスクを入力してください。");
+				return;
+			}else{
+				// inputTime = $("#selectTime").val();
+			    //時計から時間の取得　ここではデバッグ用にminite ->  secに変換
+			    var getTime = $('.form-control').val();		    
+			    inputTime = demoSec(getTime);
+			    
+			    // console.log("inputTxt", inputTxt);
+			    localStorage.setItem(inputTime, inputTxt);
+			    checkSetHTML(inputTime, inputTxt);
+			    $("#text_area").val("");	
+			}		    
+		 });
+
+		//test set
+		$("#testSaveBtn").click( function() {
+		    var radioVal = $("input[name='radio_test']:checked").val();
+		    // inputTime = $("#selectTime").val();
+		    //時計から時間の取得　ここではデバッグ用にminite ->  secに変換
+		    var getTime = $('.form-control').val();		    
+		    inputTime = demoSec(getTime);
+
+		    localStorage.setItem(inputTime, radioVal);
+		    checkSetHTML(inputTime, radioVal);
+
+		});
+
+
+		// 消去
+		$("#clear").on("click",function(){
+		  console.log("消したよ");
+		    localStorage.clear();
+		    clearHTML();
+		 });
+	});
+	
+	// speak関数 引数localstrage　key
+	function speak(txt){
+		var _txt = txt;
+		var japanese = new SpeechSynthesisUtterance(_txt);
+		japanese.volume = 4;
+		japanese.pitch = 1;
+		japanese.rate = 1;
+		japanese.lang = 'ja-JP';
+		speechSynthesis.speak(japanese);
+		console.log(_txt);
+	}
+
+	// イベントファイア
+	function alertSpeak(num){
+		var _num = num;
+		// 前置詞のランダム発生
+		var rand = Math.floor( Math.random() * randCtlNum );
+		unitTxt = beforeSayArray[rand]+ localStorage.getItem(localStorage.key(_num)); 
+		$.when(
+		  // しゃべる
+			speak(unitTxt)
+		).done(function() {
+			console.log('localStorage.key(_num)', localStorage.key(_num));
+			deleteList(localStorage.key(_num));
+
+		    // 喋ったあとdelete
+		    localStorage.removeItem(localStorage.key(_num));
+
+		    $("#text_area").val("");
+		    // clearHTML();
+		});
+	}
+
+	//デモ用にsecへ
+	function demoSec(getTime){
+		var _getTime = getTime;
+		    // 正規表現でコロンの後を取得
+		    var getMinute = _getTime.match(/\d+/g);
+			console.log(getMinute.length);
+			console.log(getMinute[0]);
+			console.log(getMinute[1]);
+		return getMinute[1];
+	}
+
+	// 存在チェックを行いhtmlをセット
+	function checkSetHTML(inputTime, textVal){
+			var _inputTime = inputTime,
+				_textVal = textVal;
+		    var checkID = '#speak_list'+ _inputTime;
+		    // 存在チェック
+		    if ($(checkID)[0]) {
+			    console.log('Exist');
+			    $(checkID).html('<span class="timeClass">00:'+ _inputTime +'</span>、'+ _textVal);
+			} else {
+			    console.log('No exist');
+			    setHtml('#showTxt', _inputTime, _textVal);
+			}
+	}
+
+	// html set
+	function setHtml(setTarget, setID, setText){
+		var _setTarget = setTarget;
+		var _setID = setID;
+		var _setText = setText;
+		$(_setTarget).append('<li class="sepeak_list_class" id="speak_list'+_setID+'"><span class="timeClass">00:'+ _setID+'</span>、'+_setText+'</li>').hide().fadeIn(1000);
+	}
+
+	// 終了したhtmlの消去
+	function deleteList(listTarget){
+		var _listTarget = listTarget;
+		var target = "#speak_list" + _listTarget;
+		console.log("#speak_list" + _listTarget);
+		endlistArray.push($(target).text());
+		//エンドリストに追加
+		$('#endList').append('<li class="sepeak_list_class" id="end_list'+_listTarget+'">'+$(target).text()+'		<span class="badge badge-success">✔︎</span></li>').hide().fadeIn(2000);
+		$(target).fadeOut(1000).remove();
+	}
+	// html初期化
+	function clearHTML(){
+		$("#text_area").val("");
+	    $('#showTxt').html("");
+	}
+
+	///////////time
+	function clock() {
+		var myDay = new Array("日","月","火","水","木","金","土");
+		var now  = new Date();
+		var year = now.getFullYear(); // 年
+		var month = now.getMonth()+1; // 月
+		var date = now.getDate(); // 日
+		var day = now.getDay();
+		var hour = now.getHours(); // 時
+		var min  = now.getMinutes(); // 分
+		var sec  = now.getSeconds(); // 秒
+
+		// 数値が1桁の場合、頭に0を付けて2桁で表示する指定
+		if(hour < 10) { hour = "0" + hour; }
+		if(min < 10) { min = "0" + min; }
+		if(sec < 10) { sec = "0" + sec; }
+
+		// フォーマット①
+		var clock1 = hour + ':' + min + ':' + sec;
+
+		// document.getElementById('clock-01').innerHTML= clock1.toLocaleString(); // div id="clock-01"
+
+		// フォーマット②
+		// var clock2 = year + '年' + month + '月' + date + '日' + '(' + myDay[day] + '曜日)'  + hour + '時' + min + '分' + sec + '秒';
+
+		var clock3 = '<span class="smallDate">'+year + '/' + month + '/' + date + '/' + '(' + myDay[day] + ')'  +'</span>'+'<span class="bigDate">'+ hour + ':' + min + ':' + sec + '</span>';
+
+		document.getElementById( 'clock-02' ) . innerHTML= clock3.toLocaleString(); // div id="clock-02"
+
+		// 1000ミリ秒ごとに処理を実効
+		window.setTimeout( "clock()", 1000);
+
+		//指定時間の時
+		for (var i = 0; i < localStorage.length; ++i) {
+			// console.log(localStorage.key(i));
+	      if(sec == localStorage.key(i)){
+	      	alertSpeak(i);
+	      }
+	    }
+	}
+	window.onload = clock;
+	///
+
+	/////モーダルウィンドウを出現させるクリックイベント
+function showModal(){
+	//キーボード操作などにより、オーバーレイが多重起動するのを防止する
+	$( this ).blur() ;	//ボタンからフォーカスを外す
+	if( $( "#modal-overlay" )[0] ) return false ;		//新しくモーダルウィンドウを起動しない (防止策1)
+	//if($("#modal-overlay")[0]) $("#modal-overlay").remove() ;		//現在のモーダルウィンドウを削除して新しく起動する (防止策2)
+
+	//オーバーレイを出現させる
+	$( "body" ).append( '<div id="modal-overlay"></div>' ) ;
+	$( "#modal-overlay" ).fadeIn( "slow", function(){
+			
+	}) ;
+
+	//コンテンツをセンタリングする
+	centeringModalSyncer() ;
+
+	//コンテンツをフェードインする
+	$( "#modal-content" ).fadeIn( "slow" ) ;
+
+	//[#modal-overlay]、または[#modal-close]をクリックしたら…
+	$( "#modal-overlay,#modal-close" ).unbind().click( function(){
+		//[#modal-content]と[#modal-overlay]をフェードアウトした後に…
+		$("#modal-content,#modal-overlay").fadeOut("slow",function(){
+
+			//[#modal-overlay]を削除する
+			$('#modal-overlay').remove();
+
+		});
+
+	} ) ;
+}
+
+//リサイズされたら、センタリングをする関数[centeringModalSyncer()]を実行する
+$( window ).resize( centeringModalSyncer ) ;
+	//センタリングを実行する関数
+	function centeringModalSyncer() {
+
+		//画面(ウィンドウ)の幅、高さを取得
+		var w = $( window ).width() ;
+		var h = $( window ).height() ;
+
+		//コンテンツ(#modal-content)の幅、高さを取得
+		var cw = $( "#modal-content" ).width();
+		var ch = $( "#modal-content" ).height();
+		console.log(cw);
+		//センタリングを実行する
+		$( "#modal-content" ).css( {"left": ((w - cw)/2) + "px","top": ((h - ch)/2) + "px"} ) ;
+
+	}
+	</script>
+</head>
+<body>
+
+	<div id="container">
+		<header>
+			<h1><img src="img/timeImage.png" alt="">Reading Reminder</h1>
+			<hr>
+			<p>ToDoアプリです。時間で指定すると、PCが喋って教えてくれるよ。※デモ用なのでminの選択がsecの実行になります</p>	
+		</header>
+		<div id="wrap">
+			<div id="clock-02"></div>
+			<hr>
+			<div id="time">
+							<div class="input-group clockpicker pull-center" data-placement="left" data-align="top" data-autoclose="true">
+						<input type="text" class="form-control" value="00:00">
+						<span class="input-group-addon">
+							<span class="glyphicon glyphicon-time"></span>
+						</span>
+					</div>
+
+			</div>
+			<label><input type="radio" id="rd0" name="radio_test" value="どらえもんへ納期の催促メール" checked/>メール</label>
+			<label><input type="radio" id="rd1" name="radio_test" value="かっこつけていいこと言ってたけど、くそコードをリファクタリングしないと怒られる" />プログラミング</label>
+			<label><input type="radio" id="rd2" name="radio_test" value="適当につくったデザインが、絶賛されて、こっちが焦る" />デザイン</label>
+			
+			<button class="btn btn-default btn-lg" id="testSaveBtn">Simple Setup</button>
+			<div class="form-group">
+			  <label for="comment" id="taskTitle">Task:</label>
+			  <textarea class="form-control" rows="5" id="text_area" placeholder="input task"></textarea>
+			</div>
+			<!-- <button class="btn btn-default btn-lg" id="speakBtn">しゃべるよ</button> -->
+			<button class="btn btn-primary btn-lg setORclerBtn" id="saveBtn">Set</button>
+			<button class="btn btn-danger btn-lg setORclerBtn" id="clear">All clear</button>
+			<hr>
+			<div id="taskList">
+				<h2>Task list</h2>
+				<div id="showTxt"></div>	
+			</div>
+			<hr>
+			<div id="endList">
+				<h2>End</h2>
+				<div id="endTxt"></div>	
+			</div>
+		</div>
+	</div>
+
+	<div id="modal-content">
+		<!-- モーダルウィンドウのコンテンツ開始 -->
+		<div id="modalWrap">
+			<img src="img/anonymas01.png" alt="">
+			<p>今から1h後にタスクを１つも終了していないと、人に言えない秘密が読み上げられます！</p>
+		</div>
+		<a id="modal-close" class="smallTxt">close</a>
+		<!-- モーダルウィンドウのコンテンツ終了 -->
+	</div>  
+	
+<script type="text/javascript" src="lib/clockpiker/assets/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="lib/clockpiker/dist/bootstrap-clockpicker.min.js"></script>
+<script type="text/javascript">
+$('.clockpicker').clockpicker()
+	.find('input').change(function(){
+		console.log(this.value);
+	});
+var input = $('#single-input').clockpicker({
+	placement: 'bottom',
+	align: 'left',
+	autoclose: true,
+	'default': 'now'
+});
+
+$('.clockpicker-with-callbacks').clockpicker({
+		donetext: 'Done',
+		init: function() { 
+			console.log("colorpicker initiated");
+		},
+		beforeShow: function() {
+			console.log("before show");
+		},
+		afterShow: function() {
+			console.log("after show");
+		},
+		beforeHide: function() {
+			console.log("before hide");
+		},
+		afterHide: function() {
+			console.log("after hide");
+		},
+		beforeHourSelect: function() {
+			console.log("before hour selected");
+		},
+		afterHourSelect: function() {
+			console.log("after hour selected");
+		},
+		beforeDone: function() {
+			console.log("before done");
+		},
+		afterDone: function() {
+			console.log("after done");
+		}
+	})
+	.find('input').change(function(){
+		console.log(this.value);
+	});
+
+	// Manually toggle to the minutes view
+	$('#check-minutes').click(function(e){
+		// Have to stop propagation here
+		e.stopPropagation();
+		input.clockpicker('show')
+				.clockpicker('toggleView', 'minutes');
+	});
+	if (/mobile/i.test(navigator.userAgent)) {
+		$('input').prop('readOnly', true);
+	}
+</script>
+<script type="text/javascript" src="lib/clockpiker/assets/js/highlight.min.js"></script>
+<script type="text/javascript">
+hljs.configure({tabReplace: '    '});
+hljs.initHighlightingOnLoad();
+</script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/reset.css">
+ <!-- Bootstrap 3 -->
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<!-- MiniColors -->
+<link rel="stylesheet" href="css/jquery.minicolors.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+
+<title>レッツ書き順！</title>
+</head>
+<body>
+<header>
+	<h1 ><span id="toTop"><a href="index.html">Canvas</a></span><img id="kakijunLogo" src="img/kakijunLogo.png" alt="レッツ書き順"><i class="fa fa-pencil-square-o"></i></h1>
+	
+</header>
+<section>
+<nav class="navbar navbar-default">
+	<ul class="nav navbar-nav">
+		<li class="navBtn"><button id="mojiTest_btn" class="btn btn-primary">書き順スタート</button></li>
+		<li  class="navBtn"><button id="clear_btn" class="btn btn-default">クリアー</button></li>
+		<li class="navBtn"><button id="save_btn" class="btn btn-default">保存</button></li>
+		<li class="navBtn"><button id="output_btn" class="btn btn-default ">表示</button></li>
+		<li class="dropdown navBtn navSlider">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">ペンの太さ：<span id="boldNum">1</span> <span class="caret"></span></a>
+			<ul class="dropdown-menu">
+				<label >太さ</label>: 
+				<input id="boldChange" type="range" name="smp02" value="1" min="1" max="20" step="1">
+          </ul>
+		</li>
+		<li  class="navBtn">
+			<div class="form-group">
+			    <input type="text" id="penHueColor" class="form-control penColor" data-control="hue" value="#ff6161">
+			</div>
+		</li>
+	</ul>
+  
+</nav>
+<div id="contents">
+	<div class="goodStamp"><img src="img/moji/good.gif" alt="good"></div>
+	<canvas id="drawArea" width="380" height="380"></canvas>
+	<div id="playPct"><img /></div>
+	<div id="shotNum">おわりまでの秒数</div>
+<!-- 	<button id="record_btn" class="btn btn-default">記録</button>
+ -->
+ 	<div id="endContents">
+ 		<button id="playVideo" class="btn btn-default">再生</button>	
+ 		<button id="gootBtn" class="btn btn-success">よくできました!</button>	
+ 		<button id="tryAgainBtn" class="btn btn-warning">おしい！</button>	
+ 	</div>
+	
+	
+	<div id="data_url_jpeg"></div>
+	
+</div>
+
+<div id="modal-content">
+	<!-- モーダルウィンドウのコンテンツ開始 -->
+	<div id="modalWrap">
+		<div id="modalLogo"></div>
+		<div id="modalPct"></div>
+		<div id="modaMov">
+			<iframe width="360" height="200" src="https://www.youtube.com/embed/5hYz3Kn08Oo" frameborder="0" allowfullscreen></iframe>
+		</div>
+	</div>
+	<a href="" id="modal-close" class="smallTxt">Try Again</a>
+	<!-- モーダルウィンドウのコンテンツ終了 -->
+</div>  
+
+</section>
+	
+<script src="js/jquery-2.1.3.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="js/jquery.minicolors.js"></script>
+<script src="js/minicolorsEx.js"></script>
+<script>
+//初期化
+var canvasFlag = false;
+var txy = 10;
+var oldX = 0;
+var oldY = 0;
+var bold_line = 3;
+var color = $("#penHueColor").val(); 
+
+//------------------------------------------------
+var can = $("#drawArea")[0]; //CanvasElement
+var context = can.getContext("2d"); //描画するための準備！
+//////////
+var localMediaStream = null;
+var shotInterval, playVideoInterval;
+var shotCounter = 0, maxShot = 30, shotSpeed = 200;
+var shotArray = [];
+var playCounter = 0;
+var startGame = false;
+//------------------------------------------------
+//上2つのスクリプトを記述します。
+
+
+//MouseDown：フラグをTrue
+//-----------------------------------------------
+$(can).on("mousedown", function(e){
+	oldX = e.offsetX;       //MOUSEDOWNしたX横座標取得
+	oldY = e.offsetY - txy; //MOUSEDOWN Y高さ座標取得
+	canvasFlag = true;
+});
+//-----------------------------------------------
+//上5つのスクリプトを記述します。
+
+
+//MouseMove：
+//----------------------------------------------
+$(can).on("mousemove", function(e){
+	if(canvasFlag == true){
+		console.log("start");
+		var px = e.offsetX;
+		var py = e.offsetY - txy;
+		context.strokeStyle = color;
+		context.lineWidth = bold_line;
+		context.beginPath();
+		context.lineJoin= "round";
+		context.lineCap = "round";
+		context.moveTo(oldX, oldY);
+		context.lineTo(px, py);
+		context.stroke();
+		context.closePath();
+		oldX = px;
+		oldY = py;
+	}
+});
+
+//MouseUp：フラグをfalse
+//------------------------------------------------
+//$(can).on("mouseup", function(e){
+//    canvas_mouse_event=false;
+//});
+//------------------------------------------------
+$(can).on("mouseup", function(e){
+	canvasFlag = false;
+});
+
+//クリアーボタンAction
+//-----------------------------------------------------------------
+$("#clear_btn").on("click", function(){
+	clearCanvas();
+});
+
+$("#save_btn").on("click", function(){
+	var _url = getSaveCanvasUrl();
+	// $('#data_url_jpeg').append('<img src="'+ _url +'" alt="" />');
+	toLocalStrage(_url);
+	alert("保存されたよ");
+});
+
+$("#output_btn").on("click", function(){
+	getLocalStrage();
+});
+
+$('#boldChange').change(function() {
+	bold_line = $('#boldChange').val();
+    $('#boldNum').text($('#boldChange').val());
+});
+
+$('#penHueColor').change(function() {
+	color = $('#penHueColor').val();
+});
+
+//////////
+$("#mojiTest_btn").on("click", function(){
+	clearCanvas();
+	console.log("文字テスト");
+	var rand = 1 + Math.floor( Math.random() * 5 );
+	var imgUrl = "img/moji/"+rand+".png"
+	setImageCanvas(context, imgUrl, 0, 0);
+	startGame =true;
+	///記録スタート
+	var drawArea = document.getElementById('drawArea');
+	recordShot(drawArea);
+});
+//////////
+
+/////////getUserMedia関係
+//ボタンイベント
+$("#playVideo").click(function() {
+	playVideo();
+});
+
+$("#tryAgainBtn").click(function(){
+	console.log("again");
+	clearCanvas();
+	$("#playVideo, #gootBtn, #tryAgainBtn").fadeOut("fast");
+	showModal();
+});
+
+$("#gootBtn").click(function(){
+	console.log("good");
+	showGood();
+});
+//canvas内に画像をはる
+// setImageCanvas(context, "img/test.png", 0, 0);
+
+//canvasのクリア
+function clearCanvas(){
+	context.beginPath();
+	context.clearRect(0, 0, can.width, can.height);
+	startGame = false;
+	$("#shotNum").html("おわりまでの秒数");
+	shotArray.length = 0;
+	playCounter = 0;
+	$("#playPct").children("img").attr({'src':''});
+}
+
+// base64の取得
+function getSaveCanvasUrl(){
+	var canvas = document.getElementById('drawArea'); 
+	  var img_jpeg_src = canvas.toDataURL("image/png");
+	  console.log("test", img_jpeg_src);
+	  return img_jpeg_src;
+}
+
+// ローカルストレージに保存
+function toLocalStrage(imgUrl){
+	var _imgUrl = imgUrl;
+	localStorage.setItem( "saveImage", _imgUrl);
+}
+
+// 表示
+function getLocalStrage(){
+	var _imgUrl = localStorage.getItem( "saveImage");
+	$('#data_url_jpeg').append('<img src="'+ _imgUrl +'" alt="" />');
+}
+
+//canvas内に画像をはる
+function setImageCanvas(context, url, dx, dy) {
+	var _context = context;
+	var _url = url;
+	var _dx = dx;
+	var _dy = dy;
+
+  if ( ! can || ! context ) { return false; }
+  /* Imageオブジェクトを生成 */
+  var img = new Image();
+  img.src = _url;
+  /* 画像が読み込まれるのを待ってから処理を続行 */
+  img.onload = function() {
+    _context.drawImage(img, _dx, _dy);
+  }
+}
+
+/////////カメラ
+//カメラ使えるかチェック
+// var hasGetUserMedia = function() {
+// 	return !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
+// 		navigator.mozGetUserMedia || navigator.msGetUserMedia);
+// }
+// //エラー
+// var onFailSoHard = function(e) {
+// 	console.log('エラー!', e);
+// };
+// window.URL = window.URL || window.webkitURL;
+// 		navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+// 								  navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+// 		navigator.getUserMedia({video: true}, function(stream) {
+// 		  // video.src = window.URL.createObjectURL(stream);
+// 		  localMediaStream = stream;
+// 		}, onFailSoHard);
+
+//カメラ画像キャプチャ
+var snapshot = function(target) {
+	var _target = target;
+	// if (localMediaStream) {
+	// 	context.drawImage(_target, 0, 0);
+	// 	// console.log(can.toDataURL('image/webp'));
+	// 	shotArray.push(can.toDataURL('image/png'));
+	// 	// document.querySelector('img').src = can.toDataURL('image/webp');
+	// 	$("#shotNum").text(shotCounter+"/"+maxShot);
+	// 	shotCounter ++;
+	// 	console.log('shotCounter:', shotCounter);
+
+	// 	if(shotCounter == maxShot){
+	// 		console.log("定数に達したので止めます")
+	// 		stopShot();
+	// 		shotCounter = 0;
+	// 	}
+	// }
+	context.drawImage(_target, 0, 0);
+		// console.log(can.toDataURL('image/webp'));
+		shotArray.push(can.toDataURL('image/png'));
+		// document.querySelector('img').src = can.toDataURL('image/webp');
+		$("#shotNum").html("おわりまで："+'<span id="sec">'+shotCounter+"/"+maxShot+'</span>');
+		shotCounter ++;
+		console.log('shotCounter:', shotCounter);
+
+		if(shotCounter == maxShot){
+			console.log("定数に達したので止めます")
+			stopShot();
+			shotCounter = 0;
+		}
+}
+
+/////記録ボタン
+function startRec(){
+	if(startGame == true){
+		var drawArea = document.getElementById('drawArea');
+		recordShot(drawArea);	
+	}else{
+		alert("出題ボタンを押してね");
+		return;
+	}
+	
+}
+//連続撮影
+var recordShot = function(recordPoint){
+	var _recordPoint = recordPoint;
+	shotInterval = setInterval(function(){snapshot(_recordPoint);}, shotSpeed);
+}
+
+//連続撮影のストップ
+var stopShot = function(){
+	alert("記録終了！");
+	clearInterval(shotInterval);
+	$("#playVideo, #gootBtn, #tryAgainBtn").fadeIn("slow");
+	// localMediaStream.stop(); //停止
+
+	//撮影した写真の出力
+	// for(var i = 0; i < shotArray.length; i++){
+	// 	// console.log('shotArray: ', i , shotArray[i]);
+	// 	$('#shotedPct').append('<img clas="shotImage" id="shotImage' + i +'" src="' + shotArray[i] +'" alt="" />')
+	// }
+}
+
+//撮影したビデオを再生
+var playVideo = function(){
+		//写真をBase64のファイルへ出力
+		// setBlobUrl("download", shotArray);
+		playVideoInterval = setInterval(setImage, shotSpeed);
+}
+//写真を差し替えて疑似アニメーション
+var setImage = function(){
+	if(shotArray.length == 0){ //撮影がされていない時
+		alert("撮影をしてください");
+		clearInterval(playVideoInterval);
+		return
+	}else{
+		var url = shotArray[playCounter];
+		var img_url = String(url);
+		$("#playPct").children("img").attr({'src':img_url});
+		console.log('interval1: ', url);
+		playCounter++;
+		if(playCounter >= shotArray.length){
+			clearInterval(playVideoInterval);
+			playCounter = 0;
+			shotArray.length = 0;
+			alert("再生終了");
+		}	
+	}
+}
+
+//よくできたねアクション
+function showGood(){
+	console.log("よくできました");
+	var target = $("#playPct");
+	$(".goodStamp").css({"top":target.offset().top, "left":target.offset().left});
+	$(".goodStamp").fadeIn("slow", function(){
+		$(".goodStamp img").animate({ 
+		    width: "100%",
+		    opacity: 0.4
+		  }, 500, function(){
+			  	$(".goodStamp").fadeOut(1000, function(){
+				console.log("消えたよ");
+				$("#endContents").append('<span class="glyphicon glyphicon-star"></span>');
+				$("#playVideo, #gootBtn, #tryAgainBtn").fadeOut("fast");
+				$(".goodStamp img").css({"width":"500%", "opacity": 1});
+				clearCanvas();
+			})
+		});
+	});
+}
+
+///////modal関係
+/////モーダルウィンドウを出現させるクリックイベント
+function showModal(){
+	//キーボード操作などにより、オーバーレイが多重起動するのを防止する
+	$( this ).blur() ;	//ボタンからフォーカスを外す
+	if( $( "#modal-overlay" )[0] ) return false ;		//新しくモーダルウィンドウを起動しない (防止策1)
+	//if($("#modal-overlay")[0]) $("#modal-overlay").remove() ;		//現在のモーダルウィンドウを削除して新しく起動する (防止策2)
+
+	//オーバーレイを出現させる
+	$( "body" ).append( '<div id="modal-overlay"></div>' ) ;
+	$( "#modal-overlay" ).fadeIn( "slow", function(){
+			console.log("youtube")
+	}) ;
+
+	//コンテンツをセンタリングする
+	centeringModalSyncer() ;
+
+	//コンテンツをフェードインする
+	$( "#modal-content" ).fadeIn( "slow" ) ;
+
+	//[#modal-overlay]、または[#modal-close]をクリックしたら…
+	$( "#modal-overlay,#modal-close" ).unbind().click( function(){
+		//[#modal-content]と[#modal-overlay]をフェードアウトした後に…
+		$( "#modal-content,#modal-overlay" ).fadeOut( "slow" , function(){
+			//[#modal-overlay]を削除する
+			$('#modal-overlay').remove() ;
+			
+		} ) ;
+
+	} ) ;
+}
+
+//リサイズされたら、センタリングをする関数[centeringModalSyncer()]を実行する
+$( window ).resize( centeringModalSyncer ) ;
+	//センタリングを実行する関数
+	function centeringModalSyncer() {
+
+		//画面(ウィンドウ)の幅、高さを取得
+		var w = $( window ).width() ;
+		var h = $( window ).height() ;
+
+		//コンテンツ(#modal-content)の幅、高さを取得
+		var cw = $( "#modal-content" ).width();
+		var ch = $( "#modal-content" ).height();
+		console.log(cw);
+		//センタリングを実行する
+		$( "#modal-content" ).css( {"left": ((w - cw)/2) + "px","top": ((h - ch)/2) + "px"} ) ;
+
+	}
+/////////
+</script>
+</body>
+</html>
