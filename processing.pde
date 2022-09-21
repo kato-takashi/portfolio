@@ -3,7 +3,7 @@ int _cellSize = 10;      // size of each cell
 int _numX, _numY;        // dimensions of grid
 
 void setup() {
-  size(1000, 600);
+  size(999, 600);
   _numX = floor(width/_cellSize);
   _numY = floor(height/_cellSize);
   restart();
